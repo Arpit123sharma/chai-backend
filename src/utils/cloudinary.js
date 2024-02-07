@@ -1,5 +1,6 @@
-import {v2 as cloudinary} from "cloudinary"
+import {v2 as cloudinary, v2} from "cloudinary"
 import fs from "fs"
+
 
 
 cloudinary.config({ 
@@ -26,6 +27,20 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
+const deleteFromCloudinary =async (publicId,resourceType)=>{
+     try {
+        if(!publicId || !resourceType) return null
+
+        const deleteResult = await v2.uploader.destroy(publicId,{
+            resource_type:resourceType
+        })
+        return deleteResult
+     } catch (error) {
+        console.error("error in deleting the image from cloudinary: ",error);
+        return null
+     }
+}
 
 
-export {uploadOnCloudinary}
+
+export {uploadOnCloudinary,deleteFromCloudinary}
