@@ -12,7 +12,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
        
         const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
         //TODO: get all videos based on query, sort, pagination
-        const videoQuery = {}
+        let videoQuery = {}
         if (query) {
             videoQuery = {...videoQuery, title:new RegExp(query,'i')}
         }
@@ -48,6 +48,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
+    
     const { title, description} = req.body
     // TODO: get video, upload to cloudinary, create video
     if (!title || !description) {
@@ -61,17 +62,24 @@ const publishAVideo = asyncHandler(async (req, res) => {
     if (!thumbnailPath) {
         throw new ApiError(400,"thumbnail is required")
     }
-    const videoUpload = await uploadOnCloudinary(videoPath);
-
-    if (!videoUpload) {
-        throw new ApiError(400,"videopath is required")
-    }
-
-    const thumbnailUpload = await uploadOnCloudinary(thumbnailPath);
-
-    if (!thumbnailUpload) {
-        throw new ApiError(400,"thumbnail is required")
-    }
+    
+        // console.log("video uploading started");
+        const videoUpload = await uploadOnCloudinary(videoPath);
+        // console.log("video uploading ended");
+        if (!videoUpload) {
+            throw new ApiError(400,"videopath is required")
+        }
+        // console.log(videoUpload);
+        // console.log(videoUpload.duration);
+        // console.log("thumbnail uploading started");
+        const thumbnailUpload = await uploadOnCloudinary(thumbnailPath);
+        // console.log("thumbnail uploading ended");
+        if (!thumbnailUpload) {
+            throw new ApiError(400,"thumbnail is required")
+        }
+        // console.log(thumbnailUpload);
+    
+    
     const video = await Video.create({
         videoFile:videoUpload?.url,
         thumbnail:thumbnailUpload?.url,
@@ -86,6 +94,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(new ApiResponse(200,video,"video uploaded successfully"))
+   
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
@@ -123,8 +132,10 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    console.log("api hit");
     //TODO: update video details like title, description, thumbnail
-    if (!videoId?.trim()) {
+    console.log(videoId);
+    if (!videoId) {
         throw new ApiError(400,"videoId is required")
     }
     if (!isValidObjectId(videoId)) {
@@ -136,7 +147,7 @@ const updateVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400,"one field is required to update")
     }
     
-    const thumbnailPath = req.files?.thumbnail[0]?.path
+    const thumbnailPath = req.file?.path
     if (!thumbnailPath) {
         throw new ApiError(400,"thumbnail path is missing")
     }
