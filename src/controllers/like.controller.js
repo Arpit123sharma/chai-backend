@@ -11,7 +11,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     if (!validVideo) {
         throw new ApiError(400,"invalid video id")
     }
-    const likeExists = await Like.find({
+    const likeExists = await Like.findOne({
         video:videoId,
         likedBy:req.user?._id
     })
@@ -42,7 +42,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     if (!isValidObjectId(commentId)) {
         throw new ApiError(400,"video id is not valid")
     }
-    const likeExists = await Like.find({
+    const likeExists = await Like.findOne({
         comment:commentId,
         likedBy:req.user?._id
     })
@@ -71,7 +71,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     if (!isValidObjectId(tweetId)) {
         throw new ApiError(400,"tweet is is not valid")
     }
-    const likeExists = await Like.find({
+    const likeExists = await Like.findOne({
         tweet:tweetId,
         likedBy:req.user?._id
     })
@@ -115,7 +115,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         {
             $lookup:{
                 from:"likes",
-                localField:"$videos._id",
+                localField:"videos._id",
                 foreignField:"video",
                 as:"likes"
             }
