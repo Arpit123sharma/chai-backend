@@ -12,7 +12,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const videoStats = await Video.aggregate([
         {
             $match:{
-                owner:mongoose.Types.ObjectId(req.user?._id)
+                owner:new mongoose.Types.ObjectId(req.user?._id)
             }
         },
         {
@@ -31,17 +31,15 @@ const getChannelStats = asyncHandler(async (req, res) => {
         throw new ApiError(500,"something went wrong while fetching videoStats ")
     }
     const totalLikes = await Like.countDocuments({
-        video:{$in:await Video.find({owner:req.user?._id},_id)}
+        video:{$in:await Video.find({owner:req.user?._id},"_id")}
     })
     if (!totalLikes) {
         throw new ApiError(500,"something went wrong while fetching totalLikes ")
     }
-    const totalSubscribers = await Subscription.countDocuments({
-        channel:req.user?._id
-    })
-    if (!totalSubscribers) {
-        throw new ApiError(500,"something went wrong while fetching totalsubscribers ")
-    }
+    const totalSubscribers = await Subscription.countDocuments({ channel: req.user._id });
+    // if (!totalSubscribers) {
+    //     throw new ApiError(500,"something went wrong while fetching totalsubscribers ")
+    // }
     return res
     .status(200)
     .json(new ApiResponse(200,{
